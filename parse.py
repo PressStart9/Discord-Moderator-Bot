@@ -460,21 +460,21 @@ async def check_time():
 
                     max_warn = cursor.execute(f"SELECT max_warn FROM guild_stats WHERE id = {member.guild.id}").fetchone()[0]
 
-                    if bad_role == 0:
+                    if bad_role == 0 and bad_role is not None:
                         bad_role = cursor.execute(f"SELECT id FROM '{str(member.guild.id) + '_roles'}' WHERE lvl_role = -2").fetchone()
 
                         if (cursor.execute(f"SELECT warn FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] >= max_warn or cursor.execute(f"SELECT reputation FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] <= max_warn * -40) and bad_role is not None:
                             await member.add_roles(member.guild.get_role(bad_role[0]))
-                    elif good_role == 0:
+                    elif good_role == 0 and bad_role is not None:
                         good_role = cursor.execute(f"SELECT id FROM '{str(member.guild.id) + '_roles'}' WHERE lvl_role = -3").fetchone()
 
                         if (cursor.execute(f"SELECT warn FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] < max_warn and cursor.execute(f"SELECT reputation FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] >= max_warn * 120) and good_role is not None:
                             await member.add_roles(member.guild.get_role(good_role[0]))
 
-                    if bad_role != 0:
+                    if bad_role != 0 and bad_role is not None:
                         if cursor.execute(f"SELECT reputation FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] >= 0:
                             await member.remove_roles(member.guild.get_role(bad_role[0]))
-                    elif good_role != 0:
+                    elif good_role != 0 and bad_role is not None:
                         if cursor.execute(f"SELECT reputation FROM '{str(member.guild.id) + '_users'}' WHERE id = {member.id}").fetchone()[0] <= 120:
                             await member.remove_roles(member.guild.get_role(good_role[0]))
 
