@@ -159,17 +159,17 @@ async def flush(ctx, table: str = None):
         guild = ctx.guild
         if table == 'users':
             table_users = str(guild.id) + '_users'
-            cursor.execute("""DELETE FROM '{table_users}'""")
+            cursor.execute("""DELETE FROM '{str(ctx.guild.id) + '_user'}'""")
             connection.commit()
         elif table == 'roles':
             table_roles = str(guild.id) + '_roles'
-            cursor.execute("""DELETE FROM '{table_roles}'""")
+            cursor.execute("""DELETE FROM '{str(ctx.guild.id) + '_roles'}'""")
             connection.commit()
         else:
             table_users = str(guild.id) + '_users'
             table_roles = str(guild.id) + '_roles'
-            cursor.execute("""DELETE FROM '{table_users}'""")
-            cursor.execute("""DELETE FROM '{table_roles}'""")
+            cursor.execute("""DELETE FROM '{str(ctx.guild.id) + '_user'}'""")
+            cursor.execute("""DELETE FROM '{str(ctx.guild.id) + '_roles'}'""")
             connection.commit()
 
         await fill_db(table_users, table_roles, guild)
