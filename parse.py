@@ -3,6 +3,7 @@ from discord.ext import commands
 import sqlite3
 import datetime
 import asyncio
+import os
 
 intents = discord.Intents.all()
 
