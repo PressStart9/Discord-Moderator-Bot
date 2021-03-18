@@ -602,4 +602,5 @@ async def update_shop(role: discord.Role = None, channel: discord.TextChannel = 
                 await msg.add_reaction(rol_emoji)
 
 
-client.run('NzgzNzUxMzAxNzYyNTE0OTU0.X8fTRw.aNj9f3Vjl6uH10nIdQg_5i9r4JU')
+token = os.environ.get('BOT_TOKEN')
+client.run(str(token))
