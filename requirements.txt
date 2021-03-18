@@ -1,0 +1,5 @@
+discord
+datetime
+sqlite3
+asyncio
+os
