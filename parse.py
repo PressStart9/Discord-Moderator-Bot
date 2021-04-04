@@ -104,7 +104,7 @@ async def on_guild_join(guild):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}").fetchone() is not None:
+    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
         print('on_raw_reaction_add')
 
         rest = cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}").fetchone()[0] - cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = {payload.emoji}").fetchone()[0]
@@ -119,7 +119,7 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}").fetchone() is not None:
+    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
         print('on_raw_reaction_remove')
 
         rest = cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.user_id}").fetchone()[0] + 0.3 * cursor.execute(f"SELECT cost FROM {'roles_' + str(role.guild.id)} WHERE emoji = {payload.emoji}").fetchone()[0]
@@ -200,7 +200,7 @@ async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj:
         print('add_role_to_shop')
 
         if emj is not None and role is not None:
-            if len(emj) == 1 and cursor.execute(f"SELECT emoji FROM {'roles_' + str(role.guild.id)} WHERE emoji = {emj}").fetchone() is None:
+            if len(emj) == 1 and cursor.execute(f"SELECT emoji FROM {'roles_' + str(role.guild.id)} WHERE emoji = {emj}") is None:
                 cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET cost = {cost} WHERE id = {role.id}")
                 cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET emoji = {emj} WHERE id = {role.id}")
                 cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET serial_number = {serial_number} WHERE id = {role.id}")
@@ -435,20 +435,20 @@ async def check_time():
 
         if str(datetime.datetime.now()).split(' ')[1].split(':')[1] in ['00', '01', '02', '03', '04']:
             for member in client.get_all_members():
-                if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is not None:
+                if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None:
                     rep_rate = 1
                     cash_rate = 1
                     bad_role = 0
                     good_role = 0
                     for role in member.roles:
-                        if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone() is not None:
+                        if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is not None:
                             rep_rate += cursor.execute(f"SELECT rep_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0]
                             cash_rate += cursor.execute(f"SELECT cash_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0]
 
-                            if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone() is not None:
+                            if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2") is not None:
                                 if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone()[0] == role.id:
                                     bad_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone()[0]
-                            elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone() is not None:
+                            elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3") is not None:
                                 if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone()[0]:
                                     good_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone()[0]
 
@@ -486,7 +486,7 @@ async def check_time():
                         cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET lvl = lvl + 1 WHERE id = {member.id}")
                         connection.commit()
 
-            if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is not None and member.voice is not None:
+            if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None and member.voice is not None:
                 if not member.voice.afk:
                     cash_rate = cursor.execute(f"SELECT cash_rate FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
                     cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET cash = cash + {cash_rate} WHERE id = {member.id}")
@@ -526,16 +526,16 @@ async def fill_db(table_users: str = None, table_roles: str = None, guild: disco
 
 async def fill_user(member: discord.Member):
     if member.bot == 0:
-        if cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is None:
+        if cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is None:
             cursor.execute(f"INSERT INTO {'users_' + str(member.guild.id)} (nickname, id, cash, rep_rate, cash_rate, reputation, warn, lvl, exp, channel_owner) VALUES ({member.name}, {member.id}, 0, 1, 1, 0, 0, 0, 0, 0)")
             connection.commit()
 
-        elif cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is not None and cursor.execute(f"SELECT nickname FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] != member.name:
+        elif cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None and cursor.execute(f"SELECT nickname FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] != member.name:
             cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET nickname = {member.name} WHERE id = {member.id}")
             connection.commit()
 
         level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
-        if cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}").fetchone() is None:
+        if cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}") is None:
             cursor.execute("""DELETE FROM lvls""")
 
             for i in range(50):
@@ -564,11 +564,11 @@ async def fill_user(member: discord.Member):
 
 
 async def fill_role(role: discord.Role):
-    if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone() is None:
+    if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is None:
         cursor.execute(f"INSERT INTO {'roles_' + str(role.guild.id)} (nickname, id, cash_rate, rep_rate, lvl_role, cost, emoji, serial_number) VALUES ({role.name}, {role.id}, 0, 0, -1, 0, '0', 0)")
         connection.commit()
 
-    elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone() is not None and cursor.execute(f"SELECT nickname FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0] != role.name:
+    elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is not None and cursor.execute(f"SELECT nickname FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0] != role.name:
         cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET nickname = {role.name} WHERE id = {role.id}")
         connection.commit()
 
