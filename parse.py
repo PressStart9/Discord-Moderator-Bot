@@ -106,12 +106,15 @@ async def on_guild_join(guild):
 async def on_raw_reaction_add(payload):
     if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
         print('on_raw_reaction_add')
-
-        rest = cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}").fetchone()[0] - cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'").fetchone()[0]
+        cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}")
+        rest = cursor.fetchone()[0]
+        cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
+        rest -= cursor.fetchone()[0]
         if rest >= 0:
             cursor.execute(f"UPDATE {'users_' + str(payload.guild_id)} SET cash = {rest} WHERE id = {payload.member.id}")
             connection.commit()
-            await payload.member.add_roles(payload.member.guild.get_role(cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE emoji = '{payload.emoji}'").fetchone()[0]))
+            cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guildid)} WHERE emoji = '{payload.emoji}'")
+            await payload.member.add_roles(payload.member.guild.get_role(cursor.fetchone()[0]))
         else:
             msg = await client.get_channel(payload.channel_id).fetch_message(payload.message_id)
             await msg.remove_reaction(payload.emoji, payload.member)
@@ -122,17 +125,23 @@ async def on_raw_reaction_remove(payload):
     if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
         print('on_raw_reaction_remove')
 
-        rest = cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.user_id}").fetchone()[0] + 0.3 * cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'").fetchone()[0]
+        cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.user_id}")
+        rest = cursor.fetchone()[0]
+        cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
+        rest += 0.3 * cursor.fetchone()[0]
         cursor.execute(f"UPDATE {'users_' + str(payload.guild_id)} SET cash = {rest} WHERE id = {payload.user_id}")
         connection.commit()
         guild = discord.utils.get(client.guilds, id=payload.guild_id)
-        await discord.utils.get(guild.members, id=payload.user_id).remove_roles(discord.utils.get(guild.roles, id=cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'").fetchone()[0]))
+        cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
+        await discord.utils.get(guild.members, id=payload.user_id).remove_roles(discord.utils.get(guild.roles, id=cursor.fetchone()[0]))
 
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    if after.channel is not None and cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}") is not None:
-        if after.channel.id == cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}").fetchone()[0]:
+    cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}")
+    if after.channel is not None and cursor.fetchone() is not None:
+        cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}")
+        if after.channel.id == cursor.fetchone()[0]:
             print('create_voice')
 
             channel = await after.channel.category.create_voice_channel(name=f"Приват {member.name}", user_limit=2)
@@ -152,7 +161,8 @@ async def on_voice_state_update(member, before, after):
 
 @client.command()
 async def flush(ctx, table: str = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('flush')
         table_users = None
         table_roles = None
@@ -180,7 +190,8 @@ async def flush(ctx, table: str = None):
 
 @client.command()
 async def role_edit(ctx, role: discord.Role = None, cash_rate: float = 1, rep_rate: float = None, lvl_role: int = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('role_edit')
 
         cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET cash_rate = {cash_rate} WHERE id = {role.id}")
@@ -196,7 +207,8 @@ async def role_edit(ctx, role: discord.Role = None, cash_rate: float = 1, rep_ra
 
 @client.command()
 async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj: str = None, serial_number: int = 50):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('add_role_to_shop')
 
         if emj is not None and role is not None:
@@ -206,11 +218,13 @@ async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj:
                 cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET serial_number = {serial_number} WHERE id = {role.id}")
                 connection.commit()
 
-                shop_message = cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()
+                cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}")
+                shop_message = cursor.fetchone()
                 if shop_message is not None:
                     shop_message = shop_message[0]
                     if shop_message != 0:
-                        msg = await ctx.guild.get_channel(cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0]).fetch_message(shop_message)
+                        cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}")
+                        msg = await ctx.guild.get_channel(cursor.fetchone()[0]).fetch_message(shop_message)
                         await msg.delete()
                         cursor.execute(f"UPDATE guild_stats SET shop_message_id = 0 WHERE id = {ctx.guild.id}")
                         connection.commit()
@@ -223,7 +237,8 @@ async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj:
 
 @client.command()
 async def remove_role_from_shop(ctx, role: discord.Role = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('remove_role_from_shop')
 
         if role is not None:
@@ -232,11 +247,13 @@ async def remove_role_from_shop(ctx, role: discord.Role = None):
             cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET serial_number = 0 WHERE id = {role.id}")
             connection.commit()
 
-            shop_message = cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()
+            cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}")
+            shop_message = cursor.fetchone()
             if shop_message is not None:
                 shop_message = shop_message[0]
                 if shop_channel != 0:
-                    ctx.guild.get_channel(cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0]).fetch_message(shop_message).delete()
+                    cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}")
+                    ctx.guild.get_channel(cursor.fetchone()[0]).fetch_message(shop_message).delete()
                     cursor.execute(f"UPDATE guild_stats SET shop_message_id = 0 WHERE id = {ctx.guild.id}")
 
             await update_shop(role)
@@ -247,7 +264,8 @@ async def remove_role_from_shop(ctx, role: discord.Role = None):
 
 @client.command()
 async def max_warns(ctx, max_warn: int = 3):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('max_warns')
 
         cursor.execute(f"UPDATE guild_stats SET max_warn = {max_warn} WHERE id = {ctx.guild.id}")
@@ -259,15 +277,18 @@ async def max_warns(ctx, max_warn: int = 3):
 
 @client.command()
 async def shop_channel(ctx, channel: discord.TextChannel = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('shop_channel')
 
         if channel is None:
             channel = ctx.channel
-        shop_message = cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()
+        cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE id = {ctx.guild.id}")
+        shop_message = cursor.fetchone()
         if shop_message is not None:
             if shop_message[0] != 0:
-                ctx.guild.get_channel(cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0]).fetch_message(shop_message).delete()
+                cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}")
+                ctx.guild.get_channel(cursor.fetchone()[0]).fetch_message(shop_message).delete()
         cursor.execute(f"UPDATE guild_stats SET shop_channel_id = {channel.id} WHERE id = {ctx.guild.id}")
         connection.commit()
 
@@ -279,7 +300,8 @@ async def shop_channel(ctx, channel: discord.TextChannel = None):
 
 @client.command()
 async def create_voice_creator(ctx, name: str = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('create_voice_creator')
 
         if name is None:
@@ -295,7 +317,8 @@ async def create_voice_creator(ctx, name: str = None):
 
 @client.command()
 async def add_moder_role(ctx, role: discord.Role = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('add_moder_role')
 
         cursor.execute(f"UPDATE guild_stats SET moder_roles = moder_roles + '_' + {role.id} WHERE id = {ctx.guild.id}")
@@ -307,10 +330,12 @@ async def add_moder_role(ctx, role: discord.Role = None):
 
 @client.command()
 async def remove_moder_role(ctx, role: discord.Role = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('remove_moder_role')
 
-        moder_roles = cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].replace(f"_{role.id}", "")
+        cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+        moder_roles = cursor.fetchone()[0].replace(f"_{role.id}", "")
         cursor.execute(f"UPDATE guild_stats SET moder_roles = {moder_roles} WHERE id = {ctx.guild.id}")
         connection.commit()
 
@@ -324,16 +349,27 @@ async def stats(ctx, member: discord.Member = None):
         member = ctx.author
     embed = discord.Embed(title=f"📊Статистика {member.name}")
     embed.add_field(name="**Высшая роль**", value=member.top_role, inline=True)
-    embed.add_field(name="**Баланс**", value=str(int(round(cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0],0))) + " 💵", inline=True)
-    embed.add_field(name="**Репутация**", value=str(int(round(cursor.execute(f"SELECT reputation FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0]))) + "", inline=True)
-    embed.add_field(name="**Уровень**", value=str(cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0]), inline=True)
-    if cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0] == 50:
+    cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    embed.add_field(name="**Баланс**", value=str(int(round(cursor.fetchone()[0],0))) + " 💵", inline=True)
+    cursor.execute(f"SELECT reputation FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    embed.add_field(name="**Репутация**", value=str(int(round(cursor.fetchone()[0]))) + "", inline=True)
+    cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    embed.add_field(name="**Уровень**", value=str(cursor.fetchone()[0]), inline=True)
+    cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    if cursor.fetchone()[0] == 50:
         embed.colour = discord.Colour.gold()
         embed.add_field(name="**Опыт**", value="**1000/1000**", inline=True)
     else:
-        level = cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0]
-        embed.add_field(name="**Опыт**", value=str(cursor.execute(f"SELECT exp FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0]) + "/" + str(cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}").fetchone()[0]), inline=True)
-    embed.add_field(name="**Варны**", value="{}/3".format(cursor.execute(f"SELECT warn FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0]),inline=True)
+        cursor.execute(f"SELECT lvl FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+        level = cursor.fetchone()[0]
+        cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}")
+        maxl = cursor.fetchone()[0]
+        cursor.execute(f"SELECT exp FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+        embed.add_field(name="**Опыт**", value=str(cursor.fetchone()[0]) + "/" + str(maxl), inline=True)
+    cursor.execute(f"SELECT max_warn FROM guild_stats WHERE id = {member.guild.id}")
+    maxw = cursor.fetchone()[0]
+    cursor.execute(f"SELECT warn FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    embed.add_field(name="**Варны**", value="{}/{}".format(cursor.fetchone()[0], maxw), inline=True)
 
     await ctx.message.add_reaction('✅')
     msg = await ctx.send(embed=embed)
@@ -345,7 +381,8 @@ async def stats(ctx, member: discord.Member = None):
 async def cash(ctx, member: discord.Member = None):
     if member is None:
         member = ctx.author
-    embed = discord.Embed(description=f"**Баланс** {member.name}: " + str(int(round(cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0],0))) + " 💵")
+    cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+    embed = discord.Embed(description=f"**Баланс** {member.name}: " + str(int(round(cursor.fetchone()[0],0))) + " 💵")
 
     await ctx.message.add_reaction('✅')
     msg = await ctx.send(embed=embed)
@@ -358,7 +395,8 @@ async def give(ctx, member: discord.Member = None, count: int = None):
     if member is not None and count is not None:
         print('give')
 
-        rest = cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {ctx.author.id}").fetchone()[0] - count
+        cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {ctx.author.id}")
+        rest = cursor.fetchone()[0] - count
 
         if rest >= 0:
             cursor.execute(f"UPDATE {'users_' + str(ctx.guild.id)} SET cash = {rest} WHERE id = {ctx.author.id}")
@@ -371,11 +409,13 @@ async def give(ctx, member: discord.Member = None, count: int = None):
 
 @client.command()
 async def take(ctx, member: discord.Member = None, count: int = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         if member is not None and count is not None:
             print('take')
 
-            rest = cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0] - count
+            cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+            rest = cursor.fetchone()[0] - count
 
             if rest >= 0:
                 cursor.execute(f"UPDATE {'users_' + str(ctx.guild.id)} SET cash = cash -{count} WHERE id = {member.id}")
@@ -387,11 +427,13 @@ async def take(ctx, member: discord.Member = None, count: int = None):
 
 @client.command()
 async def award(ctx, member: discord.Member = None, count: int = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         if member is not None and count is not None:
             print('award')
 
-            rest = cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}").fetchone()[0] - count
+            cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
+            rest = cursor.fetchone()[0] - count
 
             if rest >= 0:
                 cursor.execute(f"UPDATE {'users_' + str(ctx.guild.id)} SET cash = cash + {count} WHERE id = {member.id}")
@@ -403,7 +445,8 @@ async def award(ctx, member: discord.Member = None, count: int = None):
 
 @client.command()
 async def clean(ctx, amount: int = 10):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('clean')
 
         if amount > 100:
@@ -415,7 +458,8 @@ async def clean(ctx, amount: int = 10):
 
 @client.command()
 async def warn(ctx, member: discord.Member = None, reason: str = None):
-    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}").fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         if member is not None:
             print('warn')
 
@@ -442,15 +486,24 @@ async def check_time():
                     good_role = 0
                     for role in member.roles:
                         if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is not None:
-                            rep_rate += cursor.execute(f"SELECT rep_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0]
-                            cash_rate += cursor.execute(f"SELECT cash_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0]
+                            cursor.execute(f"SELECT rep_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}")
+                            rep_rate += cursor.fetchone()[0]
+                            cursor.execute(f"SELECT cash_rate FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}")
+                            cash_rate += cursor.fetchone()[0]
 
-                            if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2") is not None:
-                                if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone()[0] == role.id:
-                                    bad_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone()[0]
-                            elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3") is not None:
-                                if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone()[0]:
-                                    good_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone()[0]
+                            cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3")
+                            rol3 = cursor.fetchone()
+                            cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2")
+                            if cursor.fetchone() is not None:
+                                cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2")
+                                if cursor.fetchone()[0] == role.id:
+                                    cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2")
+                                    bad_role = cursor.fetchone()[0]
+                            elif rol3 is not None:
+                                cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3")
+                                if cursor.fetchone()[0]:
+                                    cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3")
+                                    good_role = cursor.fetchone()[0]
 
                     rep_rate = round(rep_rate, 2)
                     cash_rate = round(cash_rate, 2)
@@ -458,46 +511,69 @@ async def check_time():
                     cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET cash_rate = {cash_rate} WHERE id = {member.id}")
                     connection.commit()
 
-                    max_warn = cursor.execute(f"SELECT max_warn FROM guild_stats WHERE id = {member.guild.id}").fetchone()[0]
+                    cursor.execute(f"SELECT max_warn FROM guild_stats WHERE id = {member.guild.id}")
+                    max_warn = cursor.fetchone()[0]
 
                     if bad_role == 0 and bad_role is not None:
-                        bad_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2").fetchone()
+                        cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -2")
+                        bad_role = cursor.fetchone()
 
-                        if (cursor.execute(f"SELECT warn FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] >= max_warn or cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] <= max_warn * -40) and bad_role is not None:
+                        cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        warn4 = cursor.fetchone()[0]
+                        cursor.execute(f"SELECT warn FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        if (cursor.fetchone()[0] >= max_warn or warn4 <= max_warn * -40) and bad_role is not None:
                             await member.add_roles(member.guild.get_role(bad_role[0]))
                     elif good_role == 0 and bad_role is not None:
-                        good_role = cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3").fetchone()
+                        cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE lvl_role = -3")
+                        good_role = cursor.fetchone()
 
-                        if (cursor.execute(f"SELECT warn FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] < max_warn and cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] >= max_warn * 120) and good_role is not None:
+                        cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        max4 = cursor.fetchone()[0]
+                        cursor.execute(f"SELECT warn FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        if (cursor.fetchone()[0] < max_warn and max4 >= max_warn * 120) and good_role is not None:
                             await member.add_roles(member.guild.get_role(good_role[0]))
 
                     if bad_role != 0 and bad_role is not None:
-                        if cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] >= 0:
+                        cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        if cursor.fetchone()[0] >= 0:
                             await member.remove_roles(member.guild.get_role(bad_role[0]))
                     elif good_role != 0 and bad_role is not None:
-                        if cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] <= 120:
+                        cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        if cursor.fetchone()[0] <= 120:
                             await member.remove_roles(member.guild.get_role(good_role[0]))
 
         for member in client.get_all_members():
             if member.bot == 0:
-                if cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] != 50:
-                    level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
-                    if member.bot == 0 and cursor.execute(f"SELECT exp FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] >= cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}").fetchone()[0]:
+                cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                if cursor.fetchone()[0] != 50:
+                    cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                    level = cursor.fetchone()[0]
+                    cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}")
+                    minl = cursor.fetchone()[0]
+                    cursor.execute(f"SELECT exp FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                    if member.bot == 0 and cursor.fetchone()[0] >= minl:
                         cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET lvl = lvl + 1 WHERE id = {member.id}")
                         connection.commit()
 
             if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None and member.voice is not None:
                 if not member.voice.afk:
-                    cash_rate = cursor.execute(f"SELECT cash_rate FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
+                    cursor.execute(f"SELECT cash_rate FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                    cash_rate = cursor.fetchone()[0]
                     cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET cash = cash + {cash_rate} WHERE id = {member.id}")
-                    level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
+                    cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                    level = cursor.fetchone()[0]
                     if level != 50:
                         cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET exp = exp + 1 WHERE id = {member.id}")
-                        if cursor.execute(f"SELECT exp FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] >= cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}").fetchone()[0]:
+                        cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}")
+                        exl = cursor.fetchone()[0]
+                        cursor.execute(f"SELECT exp FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                        if cursor.fetchone()[0] >= exl:
                             cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET lvl = lvl + 1 WHERE id = {member.id}")
                             cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET exp = 0 WHERE id = {member.id}")
-                            level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
-                            role = cursor.execute(f"SELECT id FROM {'roles_' + str(member.guild.id)} WHERE lvl_role = {level}").fetchone()
+                            cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+                            level = cursor.fetchone()[0]
+                            cursor.execute(f"SELECT id FROM {'roles_' + str(member.guild.id)} WHERE lvl_role = {level}")
+                            role = cursor.fetchone()
                             if role is not None:
                                 role = member.guild.get_role(role_id=role[0])
                                 if role not in member.roles:
@@ -526,17 +602,18 @@ async def fill_db(table_users: str = None, table_roles: str = None, guild: disco
 
 async def fill_user(member: discord.Member):
     if member.bot == 0:
-        if cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is None:
-            print(member.id, member.name)
+        cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+        if cursor.fetchone() is None:
             cursor.execute(f"INSERT INTO {'users_' + str(member.guild.id)} (nickname, id, cash, rep_rate, cash_rate, reputation, warn, lvl, exp, channel_owner) VALUES ('{member.name}', {member.id}, 0, 1, 1, 0, 0, 0, 0, 0)")
             connection.commit()
+        else:
+            cursor.execute(f"SELECT nickname FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+            if cursor.fetchone()[0] != member.name:
+                cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET nickname = '{member.name}' WHERE id = {member.id}")
+                connection.commit()
 
-        elif cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None and cursor.execute(f"SELECT nickname FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] != member.name:
-            cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET nickname = '{member.name}' WHERE id = {member.id}")
-            connection.commit()
-
-        print(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
-        level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
+        cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+        level = cursor.fetchone()[0]
         if cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}") is None:
             cursor.execute("""DELETE FROM lvls""")
 
@@ -566,27 +643,32 @@ async def fill_user(member: discord.Member):
 
 
 async def fill_role(role: discord.Role):
-    if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is None:
+    cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}")
+    if cursor.fetchone() is None:
         cursor.execute(f"INSERT INTO {'roles_' + str(role.guild.id)} (nickname, id, cash_rate, rep_rate, lvl_role, cost, emoji, serial_number) VALUES ('{role.name}', {role.id}, 0, 0, -1, 0, '0', 0)")
         connection.commit()
 
-    elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}") is not None and cursor.execute(f"SELECT nickname FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0] != role.name:
-        cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET nickname = '{role.name}' WHERE id = {role.id}")
-        connection.commit()
+    else:
+        cursor.execute(f"SELECT nickname FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}")
+        if cursor.fetchone()[0] != role.name:
+            cursor.execute(f"UPDATE {'roles_' + str(role.guild.id)} SET nickname = '{role.name}' WHERE id = {role.id}")
+            connection.commit()
 
 
 async def update_shop(role: discord.Role = None, channel: discord.TextChannel = None):
     print('update_shop')
 
     if role is not None:
-        channel = cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {role.guild.id}").fetchone()
+        cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {role.guild.id}")
+        channel = cursor.fetchone()
         if channel is not None:
             channel = role.guild.get_channel(channel[0])
 
     if channel is not None:
         role_list = []
         for rol in channel.guild.roles:
-            ser_num = cursor.execute(f"SELECT serial_number FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}").fetchone()[0]
+            cursor.execute(f"SELECT serial_number FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
+            ser_num = cursor.fetchone()[0]
             if ser_num > 0:
                 role_list.append(str(ser_num) + '_' + str(rol.id))
         role_list.sort()
@@ -594,14 +676,17 @@ async def update_shop(role: discord.Role = None, channel: discord.TextChannel = 
             embed = discord.Embed(title="**Магазин ролей**")
             for rol in role_list:
                 rol = channel.guild.get_role(int(rol.split('_')[1]))
-                rol_cost = cursor.execute(f"SELECT cost FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}").fetchone()[0]
-                embed.add_field(name=rol + ' - ' + cursor.execute(f"SELECT emoji FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}").fetchone()[0], value=f"Цена: {rol_cost} 💲", inline=True)
+                cursor.execute(f"SELECT cost FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
+                rol_cost = cursor.fetchone()[0]
+                cursor.execute(f"SELECT emoji FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
+                embed.add_field(name=rol + ' - ' + cursor.fetchone()[0], value=f"Цена: {rol_cost} 💲", inline=True)
             msg = await channel.send(embed=embed)
             cursor.execute(f"UPDATE guild_stats SET shop_message_id = {msg.id} WHERE id = {channel.guild.id}")
             connection.commit()
             for rol in role_list:
                 rol = channel.guild.get_role(int(rol.split('_')[1]))
-                rol_emoji = cursor.execute(f"SELECT emoji FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}").fetchone()[0]
+                cursor.execute(f"SELECT emoji FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
+                rol_emoji = cursor.fetchone()[0]
                 await msg.add_reaction(rol_emoji)
 
 
