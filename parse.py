@@ -527,6 +527,7 @@ async def fill_db(table_users: str = None, table_roles: str = None, guild: disco
 async def fill_user(member: discord.Member):
     if member.bot == 0:
         if cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is None:
+            print(member.id, member.name)
             cursor.execute(f"INSERT INTO {'users_' + str(member.guild.id)} (nickname, id, cash, rep_rate, cash_rate, reputation, warn, lvl, exp, channel_owner) VALUES ('{member.name}', {member.id}, 0, 1, 1, 0, 0, 0, 0, 0)")
             connection.commit()
 
@@ -534,6 +535,7 @@ async def fill_user(member: discord.Member):
             cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET nickname = '{member.name}' WHERE id = {member.id}")
             connection.commit()
 
+        print(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
         level = cursor.execute(f"SELECT lvl FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0]
         if cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}") is None:
             cursor.execute("""DELETE FROM lvls""")
