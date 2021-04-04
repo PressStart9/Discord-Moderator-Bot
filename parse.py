@@ -61,7 +61,7 @@ async def on_ready():
                 serial_number SMALLINT
                 )""")
 
-        cursor.execute(f"INSERT INTO guild_stats VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
+        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
         connection.commit()
 
     await check_time()
@@ -96,7 +96,7 @@ async def on_guild_join(guild):
         serial_number SMALLINT
         )""")
 
-    cursor.execute(f"INSERT INTO guild_stats VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
+    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
     connection.commit()
 
     await fill_db(guild=guild)
@@ -527,7 +527,7 @@ async def fill_db(table_users: str = None, table_roles: str = None, guild: disco
 async def fill_user(member: discord.Member):
     if member.bot == 0:
         if cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is None:
-            cursor.execute(f"INSERT INTO {'users_' + str(member.guild.id)} VALUES ({member.name}, {member.id}, 0, 1, 1, 0, 0, 0, 0, 0)")
+            cursor.execute(f"INSERT INTO {'users_' + str(member.guild.id)} (nickname, id, cash, rep_rate, cash_rate, reputation, warn, lvl, exp, channel_owner) VALUES ({member.name}, {member.id}, 0, 1, 1, 0, 0, 0, 0, 0)")
             connection.commit()
 
         elif cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone() is not None and cursor.execute(f"SELECT nickname FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}").fetchone()[0] != member.name:
@@ -559,13 +559,13 @@ async def fill_user(member: discord.Member):
                     a = 1800 + (90 * (i - 39))
                 else:
                     a = 2250 + (100 * (i - 44))
-                cursor.execute(f"INSERT INTO lvls VALUES ({i}, {a})")
+                cursor.execute(f"INSERT INTO lvls (lvl, exp) VALUES ({i}, {a})")
                 connection.commit()
 
 
 async def fill_role(role: discord.Role):
     if cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone() is None:
-        cursor.execute(f"INSERT INTO {'roles_' + str(role.guild.id)} VALUES ({role.name}, {role.id}, 0, 0, -1, 0, '0', 0)")
+        cursor.execute(f"INSERT INTO {'roles_' + str(role.guild.id)} (nickname, id, cash_rate, rep_rate, lvl_role, cost, emoji, serial_number) VALUES ({role.name}, {role.id}, 0, 0, -1, 0, '0', 0)")
         connection.commit()
 
     elif cursor.execute(f"SELECT id FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone() is not None and cursor.execute(f"SELECT nickname FROM {'roles_' + str(role.guild.id)} WHERE id = {role.id}").fetchone()[0] != role.name:
