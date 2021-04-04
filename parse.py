@@ -494,7 +494,7 @@ async def check_time():
                     if level != 50:
                         cursor.execute(f"UPDATE '{'users_' + str(payload.guild_id)}' SET exp = exp + 1 WHERE id = {member.id}")
                         if cursor.execute(f"SELECT exp FROM '{'users_' + str(payload.guild_id)}' WHERE id = {member.id}").fetchone()[0] >= cursor.execute(f"SELECT exp FROM lvls WHERE lvl = {level}").fetchone()[0]:
-                            cursor.execute(f"UPDATE '{s'users_' + str(payload.guild_id)}' SET lvl = lvl + 1 WHERE id = {member.id}")
+                            cursor.execute(f"UPDATE '{'users_' + str(payload.guild_id)}' SET lvl = lvl + 1 WHERE id = {member.id}")
                             cursor.execute(f"UPDATE '{'users_' + str(payload.guild_id)}' SET exp = 0 WHERE id = {member.id}")
                             level = cursor.execute(f"SELECT lvl FROM '{'users_' + str(payload.guild_id)}' WHERE id = {member.id}").fetchone()[0]
                             role = cursor.execute(f"SELECT id FROM '{'roles_' + str(role.guild.id)}' WHERE lvl_role = {level}").fetchone()
