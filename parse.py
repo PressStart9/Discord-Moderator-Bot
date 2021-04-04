@@ -20,17 +20,17 @@ async def on_ready():
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS guild_stats(
         nickname VARCHAR,
-        id INT,
+        id BIGINT,
         max_warn SMALLINT,
-        shop_channel_id INT,
-        shop_message_id INT,
+        shop_channel_id BIGINT,
+        shop_message_id BIGINT,
         moder_roles TEXT,
-        create_voice_id INT
+        create_voice_id BIGINT
         )""")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS lvls(
         lvl INT,
-        exp INT
+        exp BIGINT
         )""")
     connection.commit()
 
@@ -38,25 +38,25 @@ async def on_ready():
         user_guild = 'users_' + str(guild.id)
         cursor.execute(f"""CREATE TABLE IF NOT EXISTS {user_guild}(
                 nickname VARCHAR,
-                id INT,
+                id BIGINT,
                 cash FLOAT,
                 rep_rate FLOAT,
                 cash_rate FLOAT,
-                reputation INT,
+                reputation BIGINT,
                 warn SMALLINT,
                 lvl INT,
-                exp INT,
-                channel_owner INT
+                exp BIGINT,
+                channel_owner BIGINT
                 )""")
 
         role_guild = 'roles_' + str(guild.id)
         cursor.execute(f"""CREATE TABLE IF NOT EXISTS {role_guild}(
                 nickname VARCHAR,
-                id INT,
+                id BIGINT,
                 cash_rate FLOAT,
                 rep_rate FLOAT,
                 lvl_role INT,
-                cost INT,
+                cost BIGINT,
                 emoji CHARACTER,
                 serial_number SMALLINT
                 )""")
@@ -74,25 +74,25 @@ async def on_guild_join(guild):
     user_guild = 'users_' + str(guild.id)
     cursor.execute(f"""CREATE TABLE IF NOT EXISTS '{user_guild}'(
         nickname VARCHAR,
-        id INT,
+        id BIGINT,
         cash FLOAT,
         rep_rate FLOAT,
         cash_rate FLOAT,
-        reputation INT,
+        reputation BIGINT,
         warn SMALLINT,
         lvl INT,
-        exp INT
+        exp BIGINT
         )""")
 
     role_guild = 'roles_' + str(guild.id)
     cursor.execute(f"""CREATE TABLE IF NOT EXISTS '{role_guild}'(
         nickname VARCHAR,
-        id INT,
+        id BIGINT,
         cash_rate FLOAT,
         rep_rate FLOAT,
         lvl_role INT,
-        cost INT,
-        emoji_id INT,
+        cost BIGINT,
+        emoji CHARACTER,
         serial_number SMALLINT
         )""")
 
