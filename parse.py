@@ -131,7 +131,7 @@ async def on_raw_reaction_remove(payload):
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    if after.channel is not None:
+    if after.channel is not None and cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}") is not None:
         if after.channel.id == cursor.execute(f"SELECT create_voice_id FROM guild_stats WHERE id = {member.guild.id}").fetchone()[0]:
             print('create_voice')
 
