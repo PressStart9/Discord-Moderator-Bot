@@ -61,7 +61,7 @@ async def on_ready():
                 serial_number SMALLINT
                 )""")
 
-        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
+        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, 0, 0)")
         connection.commit()
 
     await check_time()
@@ -96,7 +96,7 @@ async def on_guild_join(guild):
         serial_number SMALLINT
         )""")
 
-    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ({guild.name}, {guild.id}, 3, 0, 0, 0, 0)")
+    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, 0, 0)")
     connection.commit()
 
     await fill_db(guild=guild)
