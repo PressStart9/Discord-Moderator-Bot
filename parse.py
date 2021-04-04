@@ -1,16 +1,16 @@
 import discord
 from discord.ext import commands
-import sqlite3
 import datetime
 import asyncio
 import os
+import psycopg2
 
 intents = discord.Intents.all()
 
 client = commands.Bot(command_prefix="-", intents=intents)
 client.remove_command("help")
 
-connection = sqlite3.connect('server.db')
+connection = psycopg2.connect(database="d8it090ko7iu69", user="mjebqmcwbksbqj", password="d7538ae6004706b238711d25a53837a6eadd936d1cdfaf6d5378c16f5a508821", host="ec2-34-252-251-16.eu-west-1.compute.amazonaws.com", port="5432")
 cursor = connection.cursor()
 
 
