@@ -36,7 +36,7 @@ async def on_ready():
 
     for guild in client.guilds:
         user_guild = 'users_' + str(guild.id)
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS '{user_guild}'(
+        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {user_guild}(
                 nickname VARCHAR,
                 id INT,
                 cash FLOAT,
@@ -50,7 +50,7 @@ async def on_ready():
                 )""")
 
         role_guild = 'roles_' + str(guild.id)
-        cursor.execute(f"""CREATE TABLE IF NOT EXISTS '{role_guild}'(
+        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {role_guild}(
                 nickname VARCHAR,
                 id INT,
                 cash_rate FLOAT,
