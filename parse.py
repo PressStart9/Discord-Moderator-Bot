@@ -4,6 +4,11 @@ import datetime
 import asyncio
 import os
 import psycopg2
+import requests
+from bs4 import BeautifulSoup
+import os
+import asyncio
+import random
 
 intents = discord.Intents.all()
 
@@ -12,6 +17,12 @@ client.remove_command("help")
 
 connection = psycopg2.connect(database="d8it090ko7iu69", user="mjebqmcwbksbqj", password="d7538ae6004706b238711d25a53837a6eadd936d1cdfaf6d5378c16f5a508821", host="ec2-34-252-251-16.eu-west-1.compute.amazonaws.com", port="5432")
 cursor = connection.cursor()
+
+website = 'https://freesteam.ru/'
+website_news = 'https://stopgame.ru/news'
+headers = {'UserAgent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'}
+
+last_game = 0
 
 
 @client.event
@@ -25,7 +36,8 @@ async def on_ready():
         shop_channel_id BIGINT,
         shop_message_id BIGINT,
         moder_roles TEXT,
-        create_voice_id BIGINT
+        create_voice_id BIGINT,
+        destribution_channel_id BIGINT
         )""")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS lvls(
@@ -61,7 +73,7 @@ async def on_ready():
                 serial_number SMALLINT
                 )""")
 
-        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, 0, 0)")
+        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
         connection.commit()
 
     await check_time()
@@ -96,7 +108,7 @@ async def on_guild_join(guild):
         serial_number SMALLINT
         )""")
 
-    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, 0, 0)")
+    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
     connection.commit()
 
     await fill_db(guild=guild)
@@ -104,7 +116,8 @@ async def on_guild_join(guild):
 
 @client.event
 async def on_raw_reaction_add(payload):
-    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
+    cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
+    if cursor is not None:
         print('on_raw_reaction_add')
         cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}")
         rest = cursor.fetchone()[0]
@@ -122,7 +135,9 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_raw_reaction_remove(payload):
-    if cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}") is not None:
+    cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
+    print(cursor)
+    if cursor is not None:
         print('on_raw_reaction_remove')
 
         cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.user_id}")
@@ -134,6 +149,23 @@ async def on_raw_reaction_remove(payload):
         guild = discord.utils.get(client.guilds, id=payload.guild_id)
         cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
         await discord.utils.get(guild.members, id=payload.user_id).remove_roles(discord.utils.get(guild.roles, id=cursor.fetchone()[0]))
+
+
+@client.event
+async def on_member_join(member):
+    print('on_member_join')
+
+    fill_user(member)
+
+
+@client.event
+async def on_member_remove(member):
+    cursor.execute(f"SELECT id FROM {'users_' + member.guild.id} WHERE id = {member.id}")
+    if cursor is not None:
+        print('on_member_remove')
+
+        cursor.execute(f"""DELETE FROM {'users_' + member.guild.id} WHERE id = {member.id}""")
+        connection.commit()
 
 
 @client.event
@@ -316,6 +348,22 @@ async def create_voice_creator(ctx, name: str = None):
 
 
 @client.command()
+async def distribution_channel(ctx, channel: discord.TextChannel = None):
+    cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+    if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
+        print('create_voice_creator')
+
+        if channel is None:
+            channel = ctx.channel
+
+        cursor.execute(f"UPDATE guild_stats SET distribution_channel_id = {channel.id} WHERE id = {ctx.guild.id}")
+        connection.commit()
+
+        await ctx.message.add_reaction('✅')
+        await ctx.message.delete(delay=5)
+
+
+@client.command()
 async def add_moder_role(ctx, role: discord.Role = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
     if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
@@ -341,6 +389,29 @@ async def remove_moder_role(ctx, role: discord.Role = None):
 
         await ctx.message.add_reaction('✅')
         await ctx.message.delete(delay=5)
+
+
+@client.command()
+async def price(ctx, game):
+    try:
+        page_game_name = 'https://hot-game.info/q=' + game
+        game_name_full_page = requests.get(page_game_name, headers=headers)
+        game_sou = BeautifulSoup(game_name_full_page.content, 'html.parser')
+        game_link = 'https://hot-game.info' + game_sou.find_all('div', "game-preview hg-block")[0].find_all("a")[0].attrs['href']
+        game_full_page = requests.get(game_link, headers=headers)
+        game_soup = BeautifulSoup(game_full_page.content, 'html.parser')
+        game_link_buy = game_soup.find_all("div", "price-block", "digital")
+        messy = await ctx.message.channel.send(game_soup.find("div", "game-price-title red").h1.text)
+        await messy.delete(delay=30)
+        for i in range(len(game_link_buy)):
+            if game_link_buy[i].span.text != 'нет в наличии' and i < 7:
+                embed = discord.Embed(title='Цена: ' + game_link_buy[i].span.span.text, url=game_link_buy[i].div.attrs['data-href'])
+                messy = await ctx.message.channel.send(embed=embed.set_image(url=game_link_buy[i].img.attrs['src']))
+                await messy.delete(delay=30)
+                await asyncio.sleep(0.1)
+    except:
+        my_msg = await ctx.message.channel.send('Укажите более точное название игры, но возможно её нет в моих магазинах')
+        my_msg.delete(delay=10)
 
 
 @client.command()
@@ -541,6 +612,22 @@ async def check_time():
                         cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
                         if cursor.fetchone()[0] <= 120:
                             await member.remove_roles(member.guild.get_role(good_role[0]))
+
+        full_page = requests.get(website, headers=headers)
+        soup = BeautifulSoup(full_page.content, 'html.parser')
+        elements_game = soup.find_all("div", "col-lg-4 col-md-4 three-columns post-box")
+        elements_game.reverse()
+
+        for num in range(9):
+            if elements_game[num].find('time', 'entry-date published').attrs['datetime'].isoformat() > last_game and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
+                embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=elements_game[num].find("div", "entry-content").p.text.split()[2])
+
+                cursor.execute("SELECT destribution_channel_id, id FROM guild_stats")
+                for guild in cursor.fetchall():
+                    channel = await client.fetch_guild(guild[1]).get_channel(guild[0])
+                    await channel.send(embed=embed.set_image(url=elements_game[num].find("img", "attachment-banner-small-image size-banner-small-image wp-post-image").attrs['src']))
+                last_game = elements_game[num].find('time', 'entry-date published').attrs['datetime'].isoformat()
+                await asyncio.sleep(3)
 
         for member in client.get_all_members():
             if member.bot == 0:
