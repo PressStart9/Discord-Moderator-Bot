@@ -117,7 +117,7 @@ async def on_guild_join(guild):
 @client.event
 async def on_raw_reaction_add(payload):
     cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
-    if cursor is not None:
+    if cursor.fetchone() is not None:
         print('on_raw_reaction_add')
         cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}")
         rest = cursor.fetchone()[0]
@@ -137,7 +137,7 @@ async def on_raw_reaction_add(payload):
 async def on_raw_reaction_remove(payload):
     cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
     print(cursor)
-    if cursor is not None:
+    if cursor.fetchone() is not None:
         print('on_raw_reaction_remove')
 
         cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.user_id}")
@@ -161,7 +161,7 @@ async def on_member_join(member):
 @client.event
 async def on_member_remove(member):
     cursor.execute(f"SELECT id FROM {'users_' + member.guild.id} WHERE id = {member.id}")
-    if cursor is not None:
+    if cursor.fetchone() is not None:
         print('on_member_remove')
 
         cursor.execute(f"""DELETE FROM {'users_' + member.guild.id} WHERE id = {member.id}""")
