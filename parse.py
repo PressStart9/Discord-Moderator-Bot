@@ -619,14 +619,14 @@ async def check_time():
         elements_game.reverse()
 
         for num in range(9):
-            if (datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime(1970, 1, 1)).total_seconds() > last_game and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
+            if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime(1970, 1, 1)).total_seconds() > last_game and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
                 embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=elements_game[num].find("div", "entry-content").p.text.split()[2])
 
                 cursor.execute("SELECT destribution_channel_id, id FROM guild_stats")
                 for guild in cursor.fetchall():
                     channel = await client.fetch_guild(guild[1]).get_channel(guild[0])
                     await channel.send(embed=embed.set_image(url=elements_game[num].find("img", "attachment-banner-small-image size-banner-small-image wp-post-image").attrs['src']))
-                last_game = (datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime(1970, 1, 1)).total_seconds()
+                last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime(1970, 1, 1)).total_seconds()
                 await asyncio.sleep(3)
 
         for member in client.get_all_members():
