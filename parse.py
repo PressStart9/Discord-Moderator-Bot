@@ -22,7 +22,7 @@ website = 'https://freesteam.ru/'
 website_news = 'https://stopgame.ru/news'
 headers = {'UserAgent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'}
 
-global last_game = 0
+last_game = 0
 
 
 @client.event
@@ -612,7 +612,8 @@ async def check_time():
                         cursor.execute(f"SELECT reputation FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
                         if cursor.fetchone()[0] <= 120:
                             await member.remove_roles(member.guild.get_role(good_role[0]))
-
+        
+        global last_game
         full_page = requests.get(website, headers=headers)
         soup = BeautifulSoup(full_page.content, 'html.parser')
         elements_game = soup.find_all("div", "col-lg-4 col-md-4 three-columns post-box")
