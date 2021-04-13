@@ -75,7 +75,7 @@ async def on_ready():
 
         cursor.execute(f"SELECT id FROM guild_stats WHERE id = {guild.id}")
         if cursor.fetchone() is not None:
-            cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, destribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
+            cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
             connection.commit()
 
     await check_time()
@@ -627,7 +627,7 @@ async def check_time():
             if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds() > last_game and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
                 embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=elements_game[num].find("div", "entry-content").p.text.split()[2])
 
-                cursor.execute("SELECT destribution_channel_id, id FROM guild_stats")
+                cursor.execute("SELECT distribution_channel_id, id FROM guild_stats")
                 for guild in cursor.fetchall():
                     if guild[0] != 0:
                         channel = await client.fetch_guild(guild[1])
