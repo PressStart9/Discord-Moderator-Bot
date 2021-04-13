@@ -373,7 +373,9 @@ async def add_moder_role(ctx, role: discord.Role = None):
     if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('add_moder_role')
 
-        cursor.execute(f"UPDATE guild_stats SET moder_roles += '_' + {role.id} WHERE id = {ctx.guild.id}")
+        cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
+        roles = cursor.fetchone()[0]
+        cursor.execute(f"UPDATE guild_stats SET moder_roles = '{roles}' '_' + {role.id} WHERE id = {ctx.guild.id}")
         connection.commit()
 
         await ctx.message.add_reaction('✅')
