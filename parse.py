@@ -74,7 +74,7 @@ async def on_ready():
                 )""")
 
         cursor.execute(f"SELECT id FROM guild_stats WHERE id = {guild.id}")
-        if cursor.fetchone() is not None:
+        if cursor.fetchone() is None:
             cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
             connection.commit()
 
@@ -111,7 +111,7 @@ async def on_guild_join(guild):
         )""")
 
     cursor.execute(f"SELECT id FROM guild_stats WHERE id = {guild.id}")
-    if cursor.fetchone() is not None:
+    if cursor.fetchone() is None:
         cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
         connection.commit()
 
