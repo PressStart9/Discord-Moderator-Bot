@@ -355,7 +355,7 @@ async def create_voice_creator(ctx, name: str = None):
 async def distribution_channel(ctx, channel: discord.TextChannel = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
     if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
-        print('create_voice_creator')
+        print('distribution_channel')
 
         if channel is None:
             channel = ctx.channel
