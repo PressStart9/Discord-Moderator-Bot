@@ -37,7 +37,7 @@ async def on_ready():
         shop_message_id BIGINT,
         moder_roles TEXT,
         create_voice_id BIGINT,
-        destribution_channel_id BIGINT
+        distribution_channel_id BIGINT
         )""")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS lvls(
@@ -108,7 +108,7 @@ async def on_guild_join(guild):
         serial_number SMALLINT
         )""")
 
-    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, destribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
+    cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
     connection.commit()
 
     await fill_db(guild=guild)
