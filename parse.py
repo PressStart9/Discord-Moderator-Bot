@@ -631,11 +631,8 @@ async def check_time():
 
                 cursor.execute("SELECT distribution_channel_id, id FROM guild_stats")
                 for guild in cursor.fetchall():
-                    print(guild[0], guild[1])
                     if guild[0] != 0:
-                        channel = await client.fetch_guild(guild[1])
-                        print(channel)
-                        channel = await channel.get_channel(guild[0])
+                        channel = await client.fetch_guild(guild[1]).get_channel(guild[0])
                         await channel.send(embed=embed.set_image(url=elements_game[num].find("img", "attachment-banner-small-image size-banner-small-image wp-post-image").attrs['src']))
                 last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
                 await asyncio.sleep(3)
