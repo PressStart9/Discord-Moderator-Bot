@@ -15,7 +15,7 @@ intents = discord.Intents.all()
 client = commands.Bot(command_prefix="-", intents=intents)
 client.remove_command("help")
 
-connection = psycopg2.connect(database="d2lr2a0d09qdjp", user="iievftgbqcbnzw", password="c4b3d10d51eb4bc2b998adec462f32445a14753c663cdb9d7eb5cdca6b527943", host="ec2-34-252-251-16.eu-west-1.compute.amazonaws.com", port="5432")
+connection = psycopg2.connect(database="d2lr2a0d09qdjp", user="iievftgbqcbnzw", password="c4b3d10d51eb4bc2b998adec462f32445a14753c663cdb9d7eb5cdca6b527943", host="ec2-54-217-195-234.eu-west-1.compute.amazonaws.com", port="5432")
 cursor = connection.cursor()
 
 website = 'https://freesteam.ru/'
