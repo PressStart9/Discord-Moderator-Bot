@@ -23,6 +23,30 @@ website_news = 'https://stopgame.ru/news'
 headers = {'UserAgent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'}
 
 
+@client.command()
+async def help(ctx):
+    emb = discord.Embed(title="Привет, я - CISBOT", description="Я бот для модерирования и развития сервера. Вот, что я могу:")
+    emb.add_field(name="-flush <название_таблицы>", value="М_Очищает таблицу users или roles")
+    emb.add_field(name="-role_edit <*роль> <множитель_кэша> <множитель_опыта> <уровень_при_котором_выдаётся>", value="М_Изменяет параметря роли")
+    emb.add_field(name="-add_role_to_shop <*роль> <цена> <*эмоджи> <положение_в_магазине>", value="М_Добавляет роль в магазин")
+    emb.add_field(name="-remove_role_from_shop <*роль>", value="М_Удаляет роль из магазина")
+    emb.add_field(name="-max_warns <число_предупреждений>", value="М_Устанавливает максимальное число предупреждений")
+    emb.add_field(name="-shop_channel <канал>", value="М_Устанавливает канал с сообщением для покупки ролей")
+    emb.add_field(name="-create_voice_creator <название_канала>", value="М_Создаёт канал, при заходе в который создаётся приват для участника")
+    emb.add_field(name="-distribution_channel <канал>", value="М_Устанавливает канал, в который будут присылаться раздачи игр")
+    emb.add_field(name="-add_moder_role <*роль>", value="М_Позволяет роли использовать модераторские команды")
+    emb.add_field(name="-remove_moder_role <*роль>", value="М_Запрещает роли использовать модераторские команды")
+    emb.add_field(name="-price <*название_игры>", value="Выводит самые низкие цены на игру в разных магазинах")
+    emb.add_field(name="-stats <участник>", value="Выводит статистику участника")
+    emb.add_field(name="-cash <участник>", value="Выводит баланс участника")
+    emb.add_field(name="-give <*участник> <*сумма>", value="Передаёт деньги другому участнику")
+    emb.add_field(name="-take <*участник> <*сумма>", value="Забирает сумму у игрока")
+    emb.add_field(name="-award <*участник> <*сумма>", value="Даёт сумму игроку")
+    emb.add_field(name="-clean <количество_сообщений>", value="Удаляет последние сообщения в канале")
+    emb.add_field(name="-warn <*участник> <причина>", value="Выдаёт игроку предупреждение")
+    ctx.channel.send()
+
+
 @client.event
 async def on_ready():
     print('ready')
