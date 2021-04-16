@@ -642,7 +642,7 @@ async def check_time():
                     if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds() > cursor.fetchone()[0] and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                         last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
-                        cursor.execute(f"UPDATE guild_stats SET last_game_time = last_game WHERE id = {guild[1]}")
+                        cursor.execute(f"UPDATE guild_stats SET last_game_time = '{last_game}' WHERE id = {guild[1]}")
                         connection.commit()
                 await asyncio.sleep(0.1)
 
