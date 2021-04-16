@@ -625,14 +625,11 @@ async def check_time():
         elements_game.reverse()
 
         for num in range(9):
-            print(elements_game[num])
-            print(elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: '))
-            print(elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: ')[1].split())
-            url = elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: ')[1].split()[0]
-            if url == url.replace('http', ''):
+            url = elements_game[num].find("div", "entry-content").p.text
+            if url == url.replace('http', '') or url == url.replace('Страница раздачи: ', ''):
                 embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text)
             else:
-                embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=url)
+                embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=url.split('Страница раздачи: ')[1].split()[0])
             img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyloaded')
             if img is None:
                 img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyload')
