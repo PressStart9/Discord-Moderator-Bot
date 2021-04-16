@@ -44,7 +44,7 @@ async def help(ctx):
     emb.add_field(name="-award <*участник> <*сумма>", value="Даёт сумму игроку")
     emb.add_field(name="-clean <количество_сообщений>", value="Удаляет последние сообщения в канале")
     emb.add_field(name="-warn <*участник> <причина>", value="Выдаёт игроку предупреждение")
-    ctx.channel.send()
+    await ctx.channel.send()
 
 
 @client.event
