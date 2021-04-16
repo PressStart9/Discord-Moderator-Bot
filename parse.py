@@ -375,7 +375,7 @@ async def add_moder_role(ctx, role: discord.Role = None):
 
         cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
         roles = cursor.fetchone()[0]
-        cursor.execute(f"UPDATE guild_stats SET moder_roles = '{roles}' '_' + '{role.id}' WHERE id = {ctx.guild.id}")
+        cursor.execute(f"UPDATE guild_stats SET moder_roles = '{roles}' + '_' + '{role.id}' WHERE id = {ctx.guild.id}")
         connection.commit()
 
         await ctx.message.add_reaction('✅')
