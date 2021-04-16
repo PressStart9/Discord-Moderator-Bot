@@ -22,8 +22,6 @@ website = 'https://freesteam.ru/'
 website_news = 'https://stopgame.ru/news'
 headers = {'UserAgent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Safari/537.36'}
 
-last_game = 0
-
 
 @client.event
 async def on_ready():
@@ -37,7 +35,8 @@ async def on_ready():
         shop_message_id BIGINT,
         moder_roles TEXT,
         create_voice_id BIGINT,
-        distribution_channel_id BIGINT
+        distribution_channel_id BIGINT,
+        last_game_time BIGINT
         )""")
 
     cursor.execute("""CREATE TABLE IF NOT EXISTS lvls(
@@ -75,7 +74,7 @@ async def on_ready():
 
         cursor.execute(f"SELECT id FROM guild_stats WHERE id = {guild.id}")
         if cursor.fetchone() is None:
-            cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
+            cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id, last_game_time) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0, 0)")
             connection.commit()
 
     await check_time()
@@ -112,7 +111,7 @@ async def on_guild_join(guild):
 
     cursor.execute(f"SELECT id FROM guild_stats WHERE id = {guild.id}")
     if cursor.fetchone() is None:
-        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0)")
+        cursor.execute(f"INSERT INTO guild_stats (nickname, id, max_warn, shop_channel_id, shop_message_id, moder_roles, create_voice_id, distribution_channel_id, last_game_time) VALUES ('{guild.name}', {guild.id}, 3, 0, 0, '', 0, 0, 0)")
         connection.commit()
 
     await fill_db(guild=guild)
@@ -620,7 +619,6 @@ async def check_time():
                         if cursor.fetchone()[0] <= 120:
                             await member.remove_roles(member.guild.get_role(good_role[0]))
         
-        global last_game
         full_page = requests.get(website, headers=headers)
         soup = BeautifulSoup(full_page.content, 'html.parser')
         elements_game = soup.find_all("div", "col-lg-4 col-md-4 three-columns post-box")
@@ -643,6 +641,8 @@ async def check_time():
                         channel = client.get_channel(guild[0])
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                 last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
+                cursor.execute(f"UPDATE guild_stats SET last_game_time = last_game WHERE id = {member.guild.id}")
+                connection.commit()
                 await asyncio.sleep(3)
 
         for member in client.get_all_members():
