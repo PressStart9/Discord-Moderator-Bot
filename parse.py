@@ -632,6 +632,7 @@ async def check_time():
                 cursor.execute("SELECT distribution_channel_id FROM guild_stats")
                 for guild in cursor.fetchall():
                     if guild[0] != 0:
+                    print(elements_game[num])
                         channel = client.get_channel(guild[0])
                         img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyloaded')
                         if img is None:
