@@ -627,16 +627,15 @@ async def check_time():
 
         for num in range(9):
             if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds() > last_game and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
-                embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=elements_game[num].find("div", "entry-content").p.text.split()[2])
-
+                embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text, url=elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: ')[1].split()[0])
+                img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyloaded')
+                        if img is None:
+                img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyload')
+                
                 cursor.execute("SELECT distribution_channel_id FROM guild_stats")
                 for guild in cursor.fetchall():
                     if guild[0] != 0:
                         channel = client.get_channel(guild[0])
-                        img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyloaded')
-                        if img is None:
-                            img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyload')
-                        print(img.attrs['data-src'])
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                 last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
                 await asyncio.sleep(3)
