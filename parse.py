@@ -130,7 +130,7 @@ async def on_raw_reaction_add(payload):
         if rest >= 0:
             cursor.execute(f"UPDATE {'users_' + str(payload.guild_id)} SET cash = {rest} WHERE id = {payload.member.id}")
             connection.commit()
-            cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guild.id)} WHERE emoji = '{payload.emoji}'")
+            cursor.execute(f"SELECT id FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
             await payload.member.add_roles(payload.member.guild.get_role(cursor.fetchone()[0]))
         else:
             msg = await client.get_channel(payload.channel_id).fetch_message(payload.message_id)
