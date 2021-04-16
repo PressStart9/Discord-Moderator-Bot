@@ -634,6 +634,8 @@ async def check_time():
                     if guild[0] != 0:
                         channel = client.get_channel(guild[0])
                         img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyloaded')
+                        if img is None:
+                            img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyload')
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                 last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
                 await asyncio.sleep(3)
