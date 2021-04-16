@@ -510,7 +510,7 @@ async def award(ctx, member: discord.Member = None, count: int = None):
             print('award')
 
             cursor.execute(f"SELECT cash FROM {'users_' + str(ctx.guild.id)} WHERE id = {member.id}")
-            rest = cursor.fetchone()[0] - count
+            rest = cursor.fetchone()[0] + count
 
             if rest >= 0:
                 cursor.execute(f"UPDATE {'users_' + str(ctx.guild.id)} SET cash = cash + {count} WHERE id = {member.id}")
