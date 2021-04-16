@@ -123,6 +123,7 @@ async def on_raw_reaction_add(payload):
     cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
     if cursor.fetchone() is not None:
         print('on_raw_reaction_add')
+        
         cursor.execute(f"SELECT cash FROM {'users_' + str(payload.guild_id)} WHERE id = {payload.member.id}")
         rest = cursor.fetchone()[0]
         cursor.execute(f"SELECT cost FROM {'roles_' + str(payload.guild_id)} WHERE emoji = '{payload.emoji}'")
@@ -140,7 +141,6 @@ async def on_raw_reaction_add(payload):
 @client.event
 async def on_raw_reaction_remove(payload):
     cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
-    print(cursor)
     if cursor.fetchone() is not None:
         print('on_raw_reaction_remove')
 
@@ -324,7 +324,8 @@ async def shop_channel(ctx, channel: discord.TextChannel = None):
         if shop_message is not None:
             if shop_message[0] != 0:
                 cursor.execute(f"SELECT shop_channel_id FROM guild_stats WHERE id = {ctx.guild.id}")
-                ctx.guild.get_channel(cursor.fetchone()[0]).fetch_message(shop_message).delete()
+                msg = await ctx.guild.get_channel(cursor.fetchone()[0]).fetch_message(shop_message)
+                msg.delete()
         cursor.execute(f"UPDATE guild_stats SET shop_channel_id = {channel.id} WHERE id = {ctx.guild.id}")
         connection.commit()
 
