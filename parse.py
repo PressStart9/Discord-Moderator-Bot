@@ -625,6 +625,9 @@ async def check_time():
         elements_game.reverse()
 
         for num in range(9):
+            print(elements_game[num])
+            print(elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: '))
+            print(elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: ')[1].split())
             url = elements_game[num].find("div", "entry-content").p.text.split('Страница раздачи: ')[1].split()[0]
             if url == url.replace('http', ''):
                 embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text)
