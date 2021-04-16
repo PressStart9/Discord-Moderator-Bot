@@ -634,15 +634,15 @@ async def check_time():
             if img is None:
                 img = elements_game[num].find('img', 'attachment-banner-small-image size-banner-small-image wp-post-image lazyload')
                 
-            cursor.execute("SELECT distribution_channel_id FROM guild_stats")
+            cursor.execute("SELECT distribution_channel_id, id FROM guild_stats")
             for guild in cursor.fetchall():
                 if guild[0] != 0:
                     channel = client.get_channel(guild[0])
-                    cursor.execute(f"SELECT last_game_time FROM guild_stats WHERE id = {guild.id}")
+                    cursor.execute(f"SELECT last_game_time FROM guild_stats WHERE id = {guild[1]}")
                     if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds() > cursor.fetchone()[0] and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                         last_game = (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds()
-                        cursor.execute(f"UPDATE guild_stats SET last_game_time = last_game WHERE id = {guild.id}")
+                        cursor.execute(f"UPDATE guild_stats SET last_game_time = last_game WHERE id = {guild[1]}")
                         connection.commit()
                 await asyncio.sleep(0.1)
 
