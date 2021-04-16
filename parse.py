@@ -781,7 +781,7 @@ async def update_shop(role: discord.Role = None, channel: discord.TextChannel = 
                 cursor.execute(f"SELECT cost FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
                 rol_cost = cursor.fetchone()[0]
                 cursor.execute(f"SELECT emoji FROM {'roles_' + str(rol.guild.id)} WHERE id = {rol.id}")
-                embed.add_field(name=rol + ' - ' + cursor.fetchone()[0], value=f"Цена: {rol_cost} 💲", inline=True)
+                embed.add_field(name=rol.name + ' - ' + cursor.fetchone()[0], value=f"Цена: {rol_cost} 💲", inline=True)
             msg = await channel.send(embed=embed)
             cursor.execute(f"UPDATE guild_stats SET shop_message_id = {msg.id} WHERE id = {channel.guild.id}")
             connection.commit()
