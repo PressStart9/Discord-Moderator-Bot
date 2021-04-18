@@ -119,7 +119,8 @@ async def on_guild_join(guild):
         reputation BIGINT,
         warn SMALLINT,
         lvl INT,
-        exp BIGINT
+        exp BIGINT,
+        channel_owner BIGINT
         )""")
 
     role_guild = 'roles_' + str(guild.id)
