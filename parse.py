@@ -223,7 +223,8 @@ async def on_voice_state_update(member, before, after):
 @client.command()
 async def flush(ctx, table: str = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('flush')
         table_users = None
@@ -253,7 +254,8 @@ async def flush(ctx, table: str = None):
 @client.command()
 async def role_edit(ctx, role: discord.Role = None, cash_rate: float = 1, rep_rate: float = None, lvl_role: int = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('role_edit')
 
@@ -271,7 +273,8 @@ async def role_edit(ctx, role: discord.Role = None, cash_rate: float = 1, rep_ra
 @client.command()
 async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj: str = None, serial_number: int = 50):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('add_role_to_shop')
 
@@ -302,7 +305,8 @@ async def add_role_to_shop(ctx, role: discord.Role = None, cost: int = 100, emj:
 @client.command()
 async def remove_role_from_shop(ctx, role: discord.Role = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('remove_role_from_shop')
 
@@ -330,7 +334,8 @@ async def remove_role_from_shop(ctx, role: discord.Role = None):
 @client.command()
 async def max_warns(ctx, max_warn: int = 3):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('max_warns')
 
@@ -344,7 +349,8 @@ async def max_warns(ctx, max_warn: int = 3):
 @client.command()
 async def shop_channel(ctx, channel: discord.TextChannel = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('shop_channel')
 
@@ -369,7 +375,8 @@ async def shop_channel(ctx, channel: discord.TextChannel = None):
 @client.command()
 async def create_voice_creator(ctx, name: str = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('create_voice_creator')
 
@@ -387,8 +394,8 @@ async def create_voice_creator(ctx, name: str = None):
 @client.command()
 async def distribution_channel(ctx, channel: discord.TextChannel = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    print([crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')])
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('distribution_channel')
 
@@ -405,7 +412,8 @@ async def distribution_channel(ctx, channel: discord.TextChannel = None):
 @client.command()
 async def add_moder_role(ctx, role: discord.Role = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('add_moder_role')
 
@@ -421,7 +429,8 @@ async def add_moder_role(ctx, role: discord.Role = None):
 @client.command()
 async def remove_moder_role(ctx, role: discord.Role = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('remove_moder_role')
 
@@ -524,7 +533,8 @@ async def give(ctx, member: discord.Member = None, count: int = None):
 @client.command()
 async def take(ctx, member: discord.Member = None, count: int = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         if member is not None and count is not None:
             print('take')
@@ -543,7 +553,8 @@ async def take(ctx, member: discord.Member = None, count: int = None):
 @client.command()
 async def award(ctx, member: discord.Member = None, count: int = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         if member is not None and count is not None:
             print('award')
@@ -562,7 +573,8 @@ async def award(ctx, member: discord.Member = None, count: int = None):
 @client.command()
 async def clean(ctx, amount: int = 10):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         print('clean')
 
@@ -576,7 +588,8 @@ async def clean(ctx, amount: int = 10):
 @client.command()
 async def warn(ctx, member: discord.Member = None, reason: str = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    tf = [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
+    tf = True in [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')]
+    tf = tf or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048
     if tf:
         if member is not None:
             print('warn')
