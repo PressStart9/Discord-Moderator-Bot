@@ -363,7 +363,7 @@ async def shop_channel(ctx, channel: discord.TextChannel = None):
 @client.command()
 async def create_voice_creator(ctx, name: str = None):
     cursor.execute(f"SELECT moder_roles FROM guild_stats WHERE id = {ctx.guild.id}")
-    print([crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')])
+    print([crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator)
     if [crossing for crossing in ctx.author.roles if crossing.id in cursor.fetchone()[0].split('_')] or ctx.author.guild_permissions.administrator or ctx.author.id == 533651610249986048:
         print('create_voice_creator')
 
