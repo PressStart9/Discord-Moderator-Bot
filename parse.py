@@ -712,8 +712,9 @@ async def check_time():
                     if member.bot == 0 and cursor.fetchone()[0] >= minl:
                         cursor.execute(f"UPDATE {'users_' + str(member.guild.id)} SET lvl = lvl + 1 WHERE id = {member.id}")
                         connection.commit()
-
-            if member.bot == 0 and cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}") is not None and member.voice is not None:
+            
+            cursor.execute(f"SELECT id FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
+            if member.bot == 0 and cursor.fetchone() is not None and member.voice is not None:
                 if not member.voice.afk:
                     cursor.execute(f"SELECT cash_rate FROM {'users_' + str(member.guild.id)} WHERE id = {member.id}")
                     cash_rate = cursor.fetchone()[0]
