@@ -678,7 +678,7 @@ async def check_time():
         elements_game = soup.find_all("div", "col-lg-4 col-md-4 three-columns post-box")
         elements_game.reverse()
 
-        for num in range(9):
+        for num in len(elements_game):
             url = elements_game[num].find("div", "entry-content").p.text
             if url == url.replace('http', '') or url == url.replace('Страница раздачи: ', ''):
                 embed = discord.Embed(title=elements_game[num].find("h2", "entry-title").a.text)
