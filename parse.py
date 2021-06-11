@@ -694,6 +694,8 @@ async def check_time():
                     channel = client.get_channel(guild[0])
                     cursor.execute(f"SELECT last_game_time FROM guild_stats WHERE id = {guild[1]}")
                     if (datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds() > cursor.fetchone()[0] and elements_game[num].find("span", "entry-cats").find_all("a")[1].text == 'Активная':
+                        if guild[1] == 852875539231801344:
+                            await channel.send(content=(str(num) + str(guild[0]) + str(guild[1])))
                         await channel.send(embed=embed.set_image(url=img.attrs['data-src']))
                         last_game = int((datetime.datetime.strptime(elements_game[num].find('time', 'entry-date published').attrs['datetime'], '%Y-%m-%dT%H:%M:%S+03:00') - datetime.datetime(1970, 1, 1)).total_seconds())
                         cursor.execute(f"UPDATE guild_stats SET last_game_time = '{last_game}' WHERE id = {guild[1]}")
