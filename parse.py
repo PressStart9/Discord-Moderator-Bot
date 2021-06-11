@@ -144,6 +144,16 @@ async def on_guild_join(guild):
 
 
 @client.event
+async def on_guild_remove(guild):
+    print('on_guild_remove')
+
+    cursor.execute(f"""DROP TABLE {'users_' + guild.id}""")
+    cursor.execute(f"""DROP TABLE {'roles_' + guild.id}""")
+    cursor.execute(f"""DELETE FROM guild_stats WHERE id = {guild.id}""")
+    connection.commit()
+
+
+@client.event
 async def on_raw_reaction_add(payload):
     cursor.execute(f"SELECT shop_message_id FROM guild_stats WHERE shop_message_id = {payload.message_id}")
     if cursor.fetchone() is not None:
