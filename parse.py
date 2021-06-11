@@ -45,7 +45,7 @@ async def help(ctx):
     emb.add_field(name="-clean <количество-сообщений>", value="Удаляет последние сообщения в канале")
     emb.add_field(name="-warn <*участник> <причина>", value="Выдаёт игроку предупреждение")
     msg = await ctx.channel.send(embed=emb)
-    msg.delete(delay=100)
+    await msg.delete(delay=100)
 
 
 @client.event
