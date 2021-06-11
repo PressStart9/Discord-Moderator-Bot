@@ -147,8 +147,8 @@ async def on_guild_join(guild):
 async def on_guild_remove(guild):
     print('on_guild_remove')
 
-    cursor.execute(f"""DROP TABLE {'users_' + guild.id}""")
-    cursor.execute(f"""DROP TABLE {'roles_' + guild.id}""")
+    cursor.execute(f"""DROP TABLE {'users_' + str(guild.id)}""")
+    cursor.execute(f"""DROP TABLE {'roles_' + str(guild.id)}""")
     cursor.execute(f"""DELETE FROM guild_stats WHERE id = {guild.id}""")
     connection.commit()
 
